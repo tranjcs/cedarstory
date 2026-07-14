@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "codebrew",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "codebrew"],
+      "port": 3000
+    },
+    {
+      "name": "theme-park-builder",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3456", "css-library"],
+      "port": 3456
+    },
+    {
+      "name": "doxie-derby",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4567", "doxie-derby"],
+      "port": 4567
+    },
+    {
+      "name": "spellchain",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "5678", "spellchain"],
+      "port": 5678
+    }
+  ]
+}
