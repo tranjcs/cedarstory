@@ -248,7 +248,7 @@ export class Renderer {
       if (z.type === 'mushroom' && z.decos) {
         for (const m of z.decos) this.#drawDeco(g, { type: 'mushroom', x: m.x, y: m.y, s: m.s, v: 0.2 });
       }
-      if (z.type === 'butter') {
+      if (z.type === 'butterfingers') {
         g.globalAlpha = 0.35 * fade;
         g.fillStyle = '#fde68a';
         g.beginPath(); g.ellipse(z.x, z.y, z.r * 0.55, z.r * 0.3, 0.3, 0, TAU); g.fill();

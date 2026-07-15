@@ -100,8 +100,10 @@ export class Cat {
   kind = 'cat';
 
   constructor(x, y, owner) {
-    this.x = x + rnd(-20, 20);
-    this.y = y + rnd(-20, 20);
+    const spread = rnd(60, 140);
+    const angle = rnd(0, Math.PI * 2);
+    this.x = x + Math.cos(angle) * spread;
+    this.y = y + Math.sin(angle) * spread;
     this.owner = owner;
     this.ttl = 14;
     this.facing = rnd(0, Math.PI * 2);
@@ -109,9 +111,11 @@ export class Cat {
     this.status = new StatusEffects();
     this.portalCd = 0;
     this.#attackCd = 0;
+    this.#personality = Math.random(); // 0-1: affects wander behavior
   }
 
   #attackCd;
+  #personality;
 
   update(dt, ctx) {
     this.ttl -= dt;
@@ -145,10 +149,20 @@ export class Cat {
     } else if (this.owner) {
       const dx = this.owner.x - this.x, dy = this.owner.y - this.y;
       const dist = Math.hypot(dx, dy);
-      if (dist > 70) {
+      const wander = this.#personality > 0.5;
+      const maxDist = wander ? 120 : 70;
+      const moveSpeed = wander ? speed * 0.5 : speed * 0.8;
+
+      if (dist > maxDist) {
         this.facing = Math.atan2(dy, dx);
-        this.x += (dx / dist) * speed * 0.8 * dt;
-        this.y += (dy / dist) * speed * 0.8 * dt;
+        this.x += (dx / dist) * moveSpeed * dt;
+        this.y += (dy / dist) * moveSpeed * dt;
+      } else if (wander && Math.random() < 0.06 * dt) {
+        // randomly wander away
+        this.facing = rnd(0, Math.PI * 2);
+        const wSpeed = speed * 0.3;
+        this.x += Math.cos(this.facing) * wSpeed * dt;
+        this.y += Math.sin(this.facing) * wSpeed * dt;
       }
     }
     return true;

@@ -85,12 +85,12 @@ export const POTIONS = {
     },
   },
 
-  butter: {
-    key: 'S', name: 'Butter Bomb', color: '#fde68a', cd: 7, radius: 110,
-    desc: 'Butterfingers! Armed enemies in the splash drop their weapons.',
+  butterfingers: {
+    key: 'S', name: 'Butterfingers', color: '#fde68a', cd: 7, radius: 110,
+    desc: 'Armed enemies in the splash drop their weapons.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
-        x, y, r: 110, ttl: 3, type: 'butter', color: '#fde68a', interval: 99,
+        x, y, r: 110, ttl: 3, type: 'butterfingers', color: '#fde68a', interval: 99,
       }));
       for (const e of ctx.world.enemies) {
         if (Math.hypot(e.x - x, e.y - y) < 110 && e.dropWeapon) e.dropWeapon(ctx);
@@ -152,4 +152,6 @@ export const ELEMENT_TO_POTION = {
   arcane: 'butter',
   earth: 'haste',
   fire: 'rain',
+  // aliases for old names
+  butter: 'butterfingers',
 };
