@@ -88,11 +88,11 @@ export class Hud {
 
   #drawSidebar(g, ctx, width, height) {
     g.textAlign = 'right';
-    const biome = ctx.chunks?.currentBiome;
-    if (biome) {
+    const location = ctx.maps?.locationName ?? ctx.chunks?.currentBiome?.name;
+    if (location) {
       g.font = '600 13px "Segoe UI",sans-serif';
       g.fillStyle = '#94a3b8';
-      g.fillText(biome.name.toUpperCase(), width - 22, height - 70);
+      g.fillText(location.toUpperCase(), width - 22, height - 70);
     }
     g.font = '600 13px "Segoe UI",sans-serif';
     g.fillStyle = '#e2e8f0';

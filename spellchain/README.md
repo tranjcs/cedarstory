@@ -15,7 +15,7 @@ Serve the folder with any static server (ES modules don't load from `file://`):
 npx serve spellchain
 ```
 
-Or use the repo's `.claude/launch.json` `spellchain` configuration (port 5678).
+Or use the repo's `.claude/launch.json` `spellchain` configuration (port 8377).
 
 ## Controls
 
@@ -30,6 +30,20 @@ Or use the repo's `.claude/launch.json` `spellchain` configuration (port 5678).
 | Backspace / Esc | Undo last element / clear queue |
 | T | Spawn training dummy at cursor |
 | M / H | Mute / toggle help |
+
+## The world
+
+The infinite overworld ("The Wilds") is a procedurally generated biome
+Voronoi. Four handcrafted places connect to it through gates — walk into a
+gate's glow to travel:
+
+- **Willowbrook** — a walled town up the north road from spawn. Safe.
+- **Hyrmoor Castle Town** — through Willowbrook's north gate: plaza,
+  fountain, market stalls, and a castle whose gates are sealed. Safe.
+- **The Sapphire Crossing** — board the boat at Willowbrook's east dock and
+  sail it yourself, Wind Waker style.
+- **Gullrest Isle** — across the water: palms, huts, a campfire, and a few
+  locals who bite.
 
 ## Spell chemistry
 
@@ -67,6 +81,12 @@ spellchain/
     ├── systems/
     │   ├── CombatSystem.js #   damage, statuses, chain lightning, healing
     │   └── EffectsSystem.js#   particles, floaters, rings, bolts
+    ├── biomes/             # infinite overworld: biome data + lazy chunks
+    ├── maps/
+    │   ├── MapRegistry.js  #   handcrafted maps (town, castle, ocean, island) — pure data
+    │   └── MapManager.js   #   gate travel, fade transitions, map collision
+    ├── classes/            # Mage & Alchemist player classes
+    ├── enemies/            # enemy data + AI
     ├── world/World.js      # entity registry, spawning, lifecycle sweep
     └── render/
         ├── Renderer.js     # world-space drawing (reads state only)

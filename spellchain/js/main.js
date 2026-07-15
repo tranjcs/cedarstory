@@ -7,6 +7,7 @@ import { CombatSystem } from './systems/CombatSystem.js';
 import { EffectsSystem } from './systems/EffectsSystem.js';
 import { World } from './world/World.js';
 import { ChunkManager } from './biomes/ChunkManager.js';
+import { MapManager } from './maps/MapManager.js';
 import { MageClass } from './classes/MageClass.js';
 import { AlchemistClass } from './classes/AlchemistClass.js';
 import { Renderer } from './render/Renderer.js';
@@ -27,6 +28,7 @@ const effects = new EffectsSystem();
 const combat = new CombatSystem(bus, effects);
 const world = new World();
 const chunks = new ChunkManager();
+const maps = new MapManager();
 const camera = new Camera();
 const input = new Input(canvas, bus);
 const renderer = new Renderer(canvas);
@@ -38,7 +40,7 @@ world.spawnDummy(330, 60);
 
 /** Shared per-frame context handed to every update — poor man's DI. */
 const ctx = {
-  bus, world, combat, effects, camera, input, chunks,
+  bus, world, combat, effects, camera, input, chunks, maps,
   aim: { x: 0, y: 0 },
   activeClass: null,
 };
@@ -92,8 +94,9 @@ const loop = new GameLoop({
     ctx.aim.x = worldPos.x;
     ctx.aim.y = worldPos.y;
 
-    chunks.update(ctx);
+    if (maps.isOverworld) chunks.update(ctx);
     world.update(dt, ctx);
+    maps.update(dt, ctx);
     ctx.activeClass?.update(dt, ctx);
     effects.update(dt, ctx);
     camera.update(dt, world.player);

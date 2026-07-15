@@ -16,6 +16,12 @@ export class Camera {
     this.#shake = Math.max(0, this.#shake - 30 * dt);
   }
 
+  /** Jump instantly — used when travelling between maps. */
+  snap(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
   addShake(magnitude) {
     this.#shake = Math.max(this.#shake, magnitude);
   }
