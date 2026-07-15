@@ -20,6 +20,7 @@ export class Boulder {
     this.t = 0;
     this.dur = 0.55 + range / 1200;
     this.els = elements;
+    this.scale = 0.8 + elements.length * 0.15;
   }
 
   /** Apparent height of the lobbed arc, for rendering. */
@@ -71,6 +72,7 @@ export class Shard {
     this.vy = vy;
     this.life = 0.8;
     this.els = elements;
+    this.scale = 0.7 + elements.length * 0.12; // 0.7x to 1.3x
   }
 
   update(dt, ctx) {
@@ -100,12 +102,14 @@ export class Wall {
    * @param {{x: number, y: number, hp: number}[]} nodes
    * @param {boolean} rock  earth-infused walls are sturdier and drawn as stone
    * @param {string[]} imbue elements that zap anything touching the barrier
+   * @param {string[]} allElements all elements in the cast (for scaling)
    */
-  constructor(nodes, rock, imbue) {
+  constructor(nodes, rock, imbue, allElements = []) {
     this.nodes = nodes;
     this.rock = rock;
     this.imbue = imbue;
     this.t = 9;
+    this.scale = 0.8 + allElements.length * 0.12; // 0.8x to 1.4x
   }
 
   update(dt, ctx) {

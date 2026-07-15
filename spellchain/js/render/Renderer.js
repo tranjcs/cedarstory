@@ -383,36 +383,37 @@ export class Renderer {
   #drawWalls(g, walls) {
     for (const w of walls) {
       const fade = clamp(w.t, 0, 1);
+      const s = w.scale;
       for (const n of w.nodes) {
         g.globalAlpha = 0.35 * fade;
         g.beginPath();
-        g.ellipse(n.x, n.y + 8, 16, 7, 0, 0, TAU);
+        g.ellipse(n.x, n.y + 8 * s, 16 * s, 7 * s, 0, 0, TAU);
         g.fillStyle = '#000';
         g.fill();
         g.globalAlpha = fade;
         if (w.rock) {
           g.fillStyle = '#78716c';
           g.beginPath();
-          g.moveTo(n.x - 14, n.y + 8); g.lineTo(n.x - 8, n.y - 20);
-          g.lineTo(n.x + 3, n.y - 26); g.lineTo(n.x + 14, n.y + 8);
+          g.moveTo(n.x - 14 * s, n.y + 8 * s); g.lineTo(n.x - 8 * s, n.y - 20 * s);
+          g.lineTo(n.x + 3 * s, n.y - 26 * s); g.lineTo(n.x + 14 * s, n.y + 8 * s);
           g.closePath(); g.fill();
           g.fillStyle = '#57534e';
           g.beginPath();
-          g.moveTo(n.x + 3, n.y - 26); g.lineTo(n.x + 14, n.y + 8); g.lineTo(n.x + 5, n.y + 8);
+          g.moveTo(n.x + 3 * s, n.y - 26 * s); g.lineTo(n.x + 14 * s, n.y + 8 * s); g.lineTo(n.x + 5 * s, n.y + 8 * s);
           g.closePath(); g.fill();
         } else {
           g.fillStyle = 'rgba(234,179,8,.25)';
           g.strokeStyle = ELEMENTS.shield.color;
           g.lineWidth = 2;
           g.beginPath();
-          g.arc(n.x, n.y - 6, 15, 0, TAU);
+          g.arc(n.x, n.y - 6 * s, 15 * s, 0, TAU);
           g.fill();
           g.stroke();
         }
         if (w.imbue.length) {
           g.fillStyle = ELEMENTS[w.imbue[0]].color;
           g.beginPath();
-          g.arc(n.x, n.y - 8, 4, 0, TAU);
+          g.arc(n.x, n.y - 8 * s, 4 * s, 0, TAU);
           g.fill();
         }
       }
@@ -596,16 +597,17 @@ export class Renderer {
   #drawBoulders(g, boulders) {
     for (const b of boulders) {
       const h = b.height;
+      const s = b.scale;
       g.globalAlpha = 0.3;
       g.beginPath();
-      g.ellipse(b.x, b.y, 14 * (1 - h / 200), 6 * (1 - h / 200), 0, 0, TAU);
+      g.ellipse(b.x, b.y, 14 * s * (1 - h / 200), 6 * s * (1 - h / 200), 0, 0, TAU);
       g.fillStyle = '#000';
       g.fill();
       g.globalAlpha = 1;
       g.fillStyle = '#8a7563';
-      g.beginPath(); g.arc(b.x, b.y - h, 13, 0, TAU); g.fill();
+      g.beginPath(); g.arc(b.x, b.y - h, 13 * s, 0, TAU); g.fill();
       g.fillStyle = '#6b5a4b';
-      g.beginPath(); g.arc(b.x + 4, b.y - h + 3, 7, 0, TAU); g.fill();
+      g.beginPath(); g.arc(b.x + 4 * s, b.y - h + 3, 7 * s, 0, TAU); g.fill();
     }
   }
 
@@ -616,6 +618,7 @@ export class Renderer {
       g.save();
       g.translate(s.x, s.y);
       g.rotate(a);
+      g.scale(s.scale, s.scale);
       g.beginPath();
       g.moveTo(9, 0); g.lineTo(-6, -3); g.lineTo(-6, 3);
       g.closePath();
@@ -630,18 +633,19 @@ export class Renderer {
     const ex = b.ox + Math.cos(b.a) * b.len;
     const ey = b.oy + Math.sin(b.a) * b.len;
     const color = b.life ? '#4ade80' : '#f43f5e';
+    const scale = channel.scale;
     g.save();
     g.globalCompositeOperation = 'lighter';
     g.strokeStyle = color;
     g.globalAlpha = 0.35;
-    g.lineWidth = 14 + Math.sin(performance.now() / 40) * 3;
+    g.lineWidth = (14 + Math.sin(performance.now() / 40) * 3) * scale;
     g.beginPath(); g.moveTo(b.ox, b.oy); g.lineTo(ex, ey); g.stroke();
     g.globalAlpha = 1;
-    g.lineWidth = 4;
+    g.lineWidth = 4 * scale;
     g.strokeStyle = '#fff';
     g.beginPath(); g.moveTo(b.ox, b.oy); g.lineTo(ex, ey); g.stroke();
     g.fillStyle = color;
-    g.beginPath(); g.arc(ex, ey, 8 + Math.random() * 3, 0, TAU); g.fill();
+    g.beginPath(); g.arc(ex, ey, (8 + Math.random() * 3) * scale, 0, TAU); g.fill();
     g.restore();
   }
 

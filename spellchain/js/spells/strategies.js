@@ -34,7 +34,7 @@ class WallStrategy {
       });
     }
     const imbue = elements.filter((el) => el !== 'shield' && el !== 'earth');
-    world.walls.push(new Wall(nodes, rock, imbue));
+    world.walls.push(new Wall(nodes, rock, imbue, elements));
     bus.emit('sfx', { id: 'wall' });
     camera.addShake(5);
     return null;
@@ -125,6 +125,7 @@ class SprayChannel extends Channel {
     super('spray', elements);
     this.present = SPRAY_ORDER.filter((el) => elements.includes(el));
     this.hasLightning = elements.includes('lightning');
+    this.scale = 0.75 + elements.length * 0.1;
   }
 
   update(dt, ctx) {
@@ -133,7 +134,7 @@ class SprayChannel extends Channel {
     const angle = aimAngle(ctx);
     const ox = player.x + Math.cos(angle) * 26;
     const oy = player.y - 14 + Math.sin(angle) * 26;
-    const n = Math.ceil(140 * dt);
+    const n = Math.ceil(140 * this.scale * dt);
     for (let i = 0; i < n; i++) {
       const el = this.present[Math.floor(Math.random() * this.present.length)] || 'water';
       const a = angle + rnd(-0.22, 0.22);
@@ -142,7 +143,7 @@ class SprayChannel extends Channel {
         x: ox, y: oy,
         vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
         life: rnd(0.35, 0.55), max: 0.55,
-        c: ELEMENTS[el].color, r: rnd(3, 6),
+        c: ELEMENTS[el].color, r: rnd(3, 6) * this.scale,
         spray: el, add: true,
       });
     }
@@ -177,6 +178,7 @@ class BeamChannel extends Channel {
     const counts = countElements(elements);
     this.isLife = Boolean(counts.life && !counts.arcane);
     this.beam = null; // {ox, oy, a, len, life} — consumed by the renderer
+    this.scale = 0.7 + elements.length * 0.12;
   }
 
   update(dt, ctx) {
