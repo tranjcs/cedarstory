@@ -53,7 +53,7 @@ export class Boulder {
     effects.puff(this.tx, this.ty, counts.fire ? '#fb923c' : '#a8a29e', counts.fire ? 24 : 14);
     bus.emit('sfx', { id: 'boulderImpact' });
     camera.addShake(counts.fire ? 10 : 6);
-    for (const d of world.dummies.slice()) {
+    for (const d of world.enemies.slice()) {
       const dd = Math.hypot(d.x - this.tx, d.y - this.ty);
       if (dd < radius + 16) {
         const a = Math.atan2(d.y - this.ty, d.x - this.tx);
@@ -82,7 +82,7 @@ export class Shard {
       ctx.effects.puff(this.x, this.y, ELEMENTS.ice.color, 4);
       return false;
     }
-    for (const d of ctx.world.dummies.slice()) {
+    for (const d of ctx.world.enemies.slice()) {
       if (dist2(d.x, d.y, this.x, this.y) < 22 ** 2) {
         ctx.combat.applyElements(d, this.els, {
           mult: 0.5, kx: this.vx * 0.25, ky: this.vy * 0.25, quiet: true,
@@ -119,7 +119,7 @@ export class Wall {
     }
     if (this.imbue.length) {
       for (const n of this.nodes) {
-        for (const d of ctx.world.dummies.slice()) {
+        for (const d of ctx.world.enemies.slice()) {
           if (dist2(d.x, d.y, n.x, n.y) < 34 ** 2 && Math.random() < 8 * dt) {
             ctx.combat.applyElements(d, this.imbue, {
               mult: 0.5, kx: (d.x - n.x) * 6, ky: (d.y - n.y) * 6, quiet: true,

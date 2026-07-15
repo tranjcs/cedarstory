@@ -75,6 +75,15 @@ export class Input {
         case 'KeyH':
           bus.emit('input:toggle-help');
           break;
+        case 'KeyP':
+          bus.emit('input:class-select');
+          break;
+        case 'Digit1':
+          bus.emit('input:choose', { index: 0 });
+          break;
+        case 'Digit2':
+          bus.emit('input:choose', { index: 1 });
+          break;
       }
     });
   }

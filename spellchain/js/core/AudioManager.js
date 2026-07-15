@@ -28,6 +28,16 @@ const SOUNDS = {
   zap:           (a) => a.tone(rnd(1800, 2400), 0.05, 'square', 0.04, -900),
   hit:           (a) => a.tone(rnd(160, 210), 0.07, 'square', 0.05),
   death:         (a) => a.noiseBurst(0.2, 0.1),
+  // alchemist & world
+  throw:         (a) => a.tone(420, 0.15, 'sine', 0.1, -160),
+  shatter:       (a) => { a.noiseBurst(0.12, 0.1); a.tone(900, 0.08, 'square', 0.04, -400); },
+  portal:        (a) => a.tone(300, 0.35, 'sine', 0.12, 300),
+  teleport:      (a) => a.tone(700, 0.2, 'sine', 0.12, -400),
+  meow:          (a) => { a.tone(760, 0.1, 'sine', 0.11, 260); a.tone(980, 0.14, 'sine', 0.07, -120); },
+  disarm:        (a) => a.tone(180, 0.12, 'square', 0.09, -60),
+  rain:          (a) => a.noiseBurst(0.35, 0.05),
+  playerHurt:    (a) => a.tone(120, 0.15, 'sawtooth', 0.12, -40),
+  down:          (a) => a.tone(60, 0.6, 'sawtooth', 0.16, -20),
 };
 
 export class AudioManager {

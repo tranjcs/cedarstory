@@ -57,7 +57,7 @@ export class EffectsSystem {
       p.vy *= Math.pow(0.05, dt);
       if (p.spray) {
         if (ctx.world.wallBlock(p.x, p.y, 6)) { this.particles.splice(i, 1); continue; }
-        for (const d of ctx.world.dummies.slice()) {
+        for (const d of ctx.world.enemies.slice()) {
           if (dist2(d.x, d.y, p.x, p.y) < 24 ** 2) {
             ctx.combat.applyElements(d, [p.spray], {
               mult: 0.22, kx: p.vx * 0.12, ky: p.vy * 0.12, quiet: true,

@@ -92,7 +92,7 @@ export function arcZap(ctx, angle, elements, mult) {
   const { world, combat, effects, bus } = ctx;
   const player = world.player;
   let hitAny = false;
-  for (const d of world.dummies.slice()) {
+  for (const d of world.enemies.slice()) {
     const dx = d.x - player.x, dy = d.y - player.y;
     const dd = Math.hypot(dx, dy);
     if (dd >= 320) continue;
@@ -188,7 +188,7 @@ class BeamChannel extends Channel {
 
     // ray to the first dummy or wall node
     let end = 500, hit = null;
-    for (const d of world.dummies) {
+    for (const d of world.enemies) {
       const t = rayCircle(ox, oy, angle, d.x, d.y - 14, 22);
       if (t !== null && t < end) { end = t; hit = d; }
     }
@@ -212,7 +212,7 @@ class BeamChannel extends Channel {
             mult: 0.16, kx: Math.cos(angle) * 40, ky: Math.sin(angle) * 40, quiet: true,
           }, ctx);
         }
-        combat.damageDummy(hit, dps * dt, 0, 0, true);
+        combat.damageTarget(hit, dps * dt, 0, 0, true);
       }
       const extras = this.els.filter((el) => el !== 'arcane' && el !== 'life');
       if (extras.length && Math.random() < 6 * dt) {
@@ -264,7 +264,7 @@ export function castArea(ctx, elements) {
   const radius = 150 + 26 * elements.length;
 
   effects.ring(player.x, player.y, 20, radius, 0.4, ELEMENTS[elements[elements.length - 1]].color);
-  for (const d of world.dummies.slice()) {
+  for (const d of world.enemies.slice()) {
     const dd = Math.hypot(d.x - player.x, d.y - player.y);
     if (dd < radius + 18) {
       const kb = 260 * (1 - dd / (radius + 60));
@@ -306,7 +306,7 @@ export function castSelf(ctx, elements) {
   if (counts.earth) {
     // ground slam
     effects.ring(player.x, player.y, 10, 110, 0.35, ELEMENTS.earth.color);
-    for (const d of world.dummies.slice()) {
+    for (const d of world.enemies.slice()) {
       if (dist2(d.x, d.y, player.x, player.y) < 110 ** 2) {
         const a = Math.atan2(d.y - player.y, d.x - player.x);
         combat.applyElements(d, ['earth'], { mult: 0.7, kx: Math.cos(a) * 300, ky: Math.sin(a) * 300 }, ctx);

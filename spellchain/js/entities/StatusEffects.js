@@ -1,19 +1,24 @@
 /**
  * Timed elemental statuses, composed into anything that can be affected by
- * spells (Component pattern). Each field is seconds remaining.
+ * spells or potions (Component pattern). Each field is seconds remaining.
  */
+const STATUS_KEYS = ['wet', 'burn', 'chill', 'frozen', 'shock', 'poison', 'confusion', 'haste'];
+
 export class StatusEffects {
   wet = 0;
   burn = 0;
   chill = 0;
   frozen = 0;
   shock = 0;
+  poison = 0;     // damage over time; infectious — spreads to neighbors
+  confusion = 0;  // enemies walk backwards, players get reversed controls
+  haste = 0;      // move 50% faster
 
   update(dt) {
-    this.wet = Math.max(0, this.wet - dt);
-    this.burn = Math.max(0, this.burn - dt);
-    this.chill = Math.max(0, this.chill - dt);
-    this.frozen = Math.max(0, this.frozen - dt);
-    this.shock = Math.max(0, this.shock - dt);
+    for (const key of STATUS_KEYS) this[key] = Math.max(0, this[key] - dt);
+  }
+
+  reset() {
+    for (const key of STATUS_KEYS) this[key] = 0;
   }
 }
