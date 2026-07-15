@@ -149,9 +149,7 @@ export const ELEMENT_TO_POTION = {
   shield: 'portal',
   cold: 'heal',
   lightning: 'alcohol',
-  arcane: 'butter',
+  arcane: 'butterfingers',
   earth: 'haste',
   fire: 'rain',
-  // aliases for old names
-  butter: 'butterfingers',
 };
