@@ -2,12 +2,14 @@ import { EventBus } from './core/EventBus.js';
 import { GameLoop } from './core/GameLoop.js';
 import { Input } from './core/Input.js';
 import { Camera } from './core/Camera.js';
+import { DayCycle } from './core/DayCycle.js';
 import { AudioManager } from './core/AudioManager.js';
 import { CombatSystem } from './systems/CombatSystem.js';
 import { EffectsSystem } from './systems/EffectsSystem.js';
+import { Reputation } from './systems/Reputation.js';
 import { World } from './world/World.js';
-import { ChunkManager } from './biomes/ChunkManager.js';
 import { MapManager } from './maps/MapManager.js';
+import { Net } from './net/Net.js';
 import { MageClass } from './classes/MageClass.js';
 import { AlchemistClass } from './classes/AlchemistClass.js';
 import { Renderer } from './render/Renderer.js';
@@ -26,24 +28,25 @@ const bus = new EventBus();
 const audio = new AudioManager();
 const effects = new EffectsSystem();
 const combat = new CombatSystem(bus, effects);
+const reputation = new Reputation(bus);
 const world = new World();
-const chunks = new ChunkManager();
 const maps = new MapManager();
+const daycycle = new DayCycle();
+const net = new Net();
 const camera = new Camera();
 const input = new Input(canvas, bus);
 const renderer = new Renderer(canvas);
 const hud = new Hud(bus);
 
-// a couple of training dummies near spawn to warm up on
-world.spawnDummy(240, -60);
-world.spawnDummy(330, 60);
-
 /** Shared per-frame context handed to every update — poor man's DI. */
 const ctx = {
-  bus, world, combat, effects, camera, input, chunks, maps,
+  bus, world, combat, effects, camera, input, maps, daycycle, net, reputation,
   aim: { x: 0, y: 0 },
   activeClass: null,
 };
+
+// place the party on the starting stage (spawns its dummies and enemies)
+maps.init(ctx);
 
 // ---- class selection (Mage 5/5, Alchemist 4/5)
 const CLASSES = {
@@ -54,7 +57,13 @@ const CLASSES = {
 function chooseClass(id) {
   if (!CLASSES[id]) return;
   ctx.activeClass = CLASSES[id]();
+  world.player.name = document.getElementById('charname')?.value.trim() || 'Wanderer';
+  world.player.cls = id;
   classSelect.classList.add('hidden');
+  // the controls bar only shows the current class's commands
+  for (const el of helpPanel.querySelectorAll('[data-for]')) {
+    el.style.display = el.dataset.for === id ? '' : 'none';
+  }
   bus.emit('announce', { text: ctx.activeClass.name + ' — good hunting' });
 }
 
@@ -84,6 +93,36 @@ bus.on('input:choose', ({ index }) => {
 });
 bus.on('input:class-select', () => classSelect.classList.toggle('hidden'));
 
+// ---- co-op panel (O key) — manual WebRTC signaling, no server needed
+const coopPanel = document.getElementById('coop');
+const coopCode = document.getElementById('coop-code');
+const coopStatus = document.getElementById('coop-status');
+net.onStatus = (text) => { coopStatus.textContent = text; };
+bus.on('input:coop', () => coopPanel.classList.toggle('hidden'));
+document.getElementById('coop-host').addEventListener('click', async () => {
+  coopStatus.textContent = 'Creating code…';
+  coopCode.value = await net.host(ctx);
+});
+document.getElementById('coop-join').addEventListener('click', () => {
+  coopStatus.textContent = 'Paste the host’s code below, then hit Accept.';
+  coopCode.value = '';
+  coopCode.focus();
+});
+document.getElementById('coop-copy').addEventListener('click', () => {
+  navigator.clipboard?.writeText(coopCode.value);
+  coopStatus.textContent = 'Copied. Send it to the other player.';
+});
+document.getElementById('coop-accept').addEventListener('click', async () => {
+  const code = coopCode.value.trim();
+  if (!code) return;
+  try {
+    if (net.role === 'host') await net.acceptAnswer(code);
+    else coopCode.value = await net.join(code, ctx);
+  } catch {
+    coopStatus.textContent = 'That code didn’t take. Paste the whole thing and try again.';
+  }
+});
+
 // ---- side-effect consumers
 bus.on('sfx', ({ id, ...data }) => audio.play(id, data));
 
@@ -94,12 +133,26 @@ const loop = new GameLoop({
     ctx.aim.x = worldPos.x;
     ctx.aim.y = worldPos.y;
 
-    if (maps.isOverworld) chunks.update(ctx);
+    const prevPhase = daycycle.phase;
+    daycycle.update(dt);
+    if (daycycle.phase !== prevPhase) {
+      const notices = {
+        sunrise: 'Dawn breaks over CedarStory',
+        sunset: 'Dusk settles — monsters stir',
+        night: 'Nightfall',
+      };
+      if (notices[daycycle.phase]) bus.emit('announce', { text: notices[daycycle.phase] });
+    }
     world.update(dt, ctx);
     maps.update(dt, ctx);
+    reputation.update(dt, ctx);
+    net.update(dt, ctx);
     ctx.activeClass?.update(dt, ctx);
     effects.update(dt, ctx);
-    camera.update(dt, world.player);
+    // inside shops and other small buildings the camera stays put
+    const map = maps.current;
+    if (map.fixedCamera) camera.update(dt, { x: map.w / 2, y: map.h / 2 });
+    else camera.update(dt, world.player);
     hud.update(dt);
   },
   render() {
@@ -111,5 +164,6 @@ const loop = new GameLoop({
 loop.start();
 
 // Debug/testing hook — lets devtools (and automated tests) poke the game.
-window.__spellchain = ctx;
-window.__spellchain.chooseClass = chooseClass;
+ctx.chooseClass = chooseClass;
+window.__cedarstory = ctx;
+window.__spellchain = ctx; // legacy alias

@@ -47,6 +47,8 @@ export class Input {
   #bindKeyboard(bus) {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
+      // don't fire game intents while typing a name or a co-op code
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       const element = KEY_TO_ELEMENT[e.code];
       if (element) {
         bus.emit('input:element', { element });
@@ -77,6 +79,9 @@ export class Input {
           break;
         case 'KeyP':
           bus.emit('input:class-select');
+          break;
+        case 'KeyO':
+          bus.emit('input:coop');
           break;
         case 'Digit1':
           bus.emit('input:choose', { index: 0 });

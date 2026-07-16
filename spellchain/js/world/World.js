@@ -1,5 +1,6 @@
 import { Player } from '../entities/Player.js';
 import { Dummy } from '../entities/Dummy.js';
+import { Npc } from '../entities/Npc.js';
 import { Enemy } from '../enemies/Enemy.js';
 import { DOTS } from '../config.js';
 import { dist2, rnd } from '../core/math.js';
@@ -17,6 +18,8 @@ export class World {
   players = [new Player()];
   /** Hostiles and training dummies together — all combat targets. */
   enemies = [];
+  /** Townsfolk — never combat targets. */
+  npcs = [];
   cats = [];
   boulders = [];
   shards = [];
@@ -32,16 +35,31 @@ export class World {
     return this.players[0];
   }
 
+  /** Everything a spell can hit: monsters, dummies — and townsfolk. */
+  get combatTargets() {
+    return [...this.enemies, ...this.npcs];
+  }
+
   spawnDummy(x, y) {
     const dummy = new Dummy(x, y);
     this.enemies.push(dummy);
     return dummy;
   }
 
+  #enemyIds = 0;
+
   spawnEnemy(type, x, y) {
     const enemy = new Enemy(type, x, y);
+    enemy.type = type;
+    enemy.id = ++this.#enemyIds; // stable handle for co-op sync
     this.enemies.push(enemy);
     return enemy;
+  }
+
+  spawnNpc(def) {
+    const npc = new Npc(def);
+    this.npcs.push(npc);
+    return npc;
   }
 
   closestPlayer(x, y) {
@@ -72,10 +90,13 @@ export class World {
   update(dt, ctx) {
     for (const p of this.players) p.update(dt, ctx);
     for (const e of this.enemies) e.update(dt, ctx);
+    for (const n of this.npcs) n.update(dt, ctx);
     this.#damageOverTime(dt, ctx);
     this.#poisonContagion(dt, ctx);
     this.#separateEnemies(dt);
+    this.#burnBuildings(dt, ctx);
     this.enemies = this.enemies.filter((e) => !e.dead);
+    this.npcs = this.npcs.filter((n) => !n.dead);
     this.cats = this.cats.filter((c) => c.update(dt, ctx));
     this.boulders = this.boulders.filter((b) => b.update(dt, ctx));
     this.shards = this.shards.filter((s) => s.update(dt, ctx));
@@ -90,9 +111,9 @@ export class World {
     this.droppedWeapons = this.droppedWeapons.filter((w) => w.t > 0);
   }
 
-  /** Burn and poison tick centrally so dummies and enemies share rules. */
+  /** Burn and poison tick centrally so dummies, enemies, and NPCs share rules. */
   #damageOverTime(dt, ctx) {
-    for (const e of this.enemies) {
+    for (const e of this.combatTargets) {
       if (e.dead) continue;
       let dot = 0;
       if (e.status.burn > 0) {
@@ -152,6 +173,98 @@ export class World {
           b.x += (dx / d) * push; b.y += (dy / d) * push;
         }
       }
+    }
+  }
+
+  // ------------------------------------------------------------- buildings
+
+  /**
+   * Splash damage to destructible buildings near (x, y) on the current
+   * map. Fire damage sets them alight; at 0 hp they collapse to rubble
+   * and stop blocking movement.
+   */
+  damageBuildings(ctx, x, y, r, dmg, fire = false) {
+    const map = ctx.maps?.current;
+    if (!map?.buildings) return;
+    for (const b of map.buildings) {
+      if (b.destroyed) continue;
+      const s = b.s ?? 1;
+      if (dist2(x, y, b.x, b.y - 30 * s) > (r + 60 * s) ** 2) continue;
+      this.hurtBuilding(ctx, b, dmg, fire);
+    }
+  }
+
+  /** Point test against building footprints — blocks projectiles/droplets. */
+  buildingBlock(ctx, x, y, element = null) {
+    const map = ctx.maps?.current;
+    if (!map?.buildings) return false;
+    for (const c of map.colliders) {
+      const b = c.b;
+      if (!b || b.destroyed) continue;
+      if (x < c.x || x > c.x + c.w || y < c.y || y > c.y + c.h) continue;
+      this.hurtBuilding(ctx, b, element === 'fire' ? 2 : 1, element === 'fire');
+      return true;
+    }
+    return false;
+  }
+
+  hurtBuilding(ctx, b, dmg, fire) {
+    if (b.destroyed) return;
+    b.hp -= dmg;
+    if (fire) b.burning = Math.max(b.burning ?? 0, 8);
+    if (b.hp <= 0) {
+      b.destroyed = true;
+      b.burning = 0;
+      ctx.effects.puff(b.x, b.y - 30, '#78716c', 30);
+      ctx.effects.floatText(b.x, b.y - 70, 'COLLAPSED', '#fb923c');
+      ctx.camera.addShake(8);
+      ctx.bus.emit('sfx', { id: 'boulderImpact' });
+      ctx.reputation?.change(-6, 'Property destroyed');
+    }
+  }
+
+  /** Burning buildings lose hp, throw flames, spread, and hate the rain. */
+  #burnBuildings(dt, ctx) {
+    const map = ctx.maps?.current;
+    if (!map?.buildings) return;
+    for (const b of map.buildings) {
+      if (!b.burning || b.destroyed) continue;
+      const s = b.s ?? 1;
+      const cx = b.x, cy = b.y - 30 * s;
+      // rain puts fires out
+      let doused = false;
+      for (const z of this.zones) {
+        if (z.type === 'rain' && dist2(z.x, z.y, cx, cy) < (z.r + 60 * s) ** 2) {
+          doused = true;
+          break;
+        }
+      }
+      if (doused) {
+        b.burning = 0;
+        ctx.effects.puff(cx, cy - 20, '#94a3b8', 8);
+        continue;
+      }
+      b.burning -= dt;
+      b.hp -= 10 * dt;
+      if (Math.random() < 16 * dt) {
+        ctx.effects.add({
+          x: cx + rnd(-40, 40) * s, y: cy + rnd(-20, 10),
+          vx: rnd(-10, 10), vy: -rnd(50, 110),
+          life: 0.6, max: 0.6, c: Math.random() < 0.7 ? '#fb923c' : '#57534e',
+          r: rnd(3, 6), add: Math.random() < 0.7,
+        });
+      }
+      // flames leap to close neighbors
+      if (Math.random() < 0.12 * dt) {
+        for (const other of map.buildings) {
+          if (other === b || other.destroyed || other.burning) continue;
+          if (dist2(cx, cy, other.x, other.y - 30) < 150 ** 2) {
+            other.burning = 8;
+            break;
+          }
+        }
+      }
+      if (b.hp <= 0) this.hurtBuilding(ctx, b, 1, false);
     }
   }
 
