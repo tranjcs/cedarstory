@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Spellchain — an infinite-world arcane sandbox with keyboard spell chaining, biomes, and monsters.">
-  <title>Spellchain — arcane sandbox</title>
+  <meta name="description" content="CedarStory — an arcane sandbox with keyboard spell chaining, biome stages, towns, and monsters.">
+  <title>CedarStory</title>
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
-  <canvas id="game" aria-label="Spellchain game viewport"></canvas>
+  <canvas id="game" aria-label="CedarStory game viewport"></canvas>
 
   <section id="class-select" aria-label="Class selection">
     <div class="panel">
       <h2>Choose your vocation</h2>
+      <label class="namerow">Character name
+        <input id="charname" maxlength="14" placeholder="Wanderer" autocomplete="off">
+      </label>
       <div class="cards">
         <button class="card" data-class="mage">
           <h3>Mage</h3>
@@ -32,26 +35,44 @@
           <span class="pick">Press 2</span>
         </button>
       </div>
-      <p class="hint">You can switch anytime with <kbd>P</kbd></p>
+      <p class="hint">You can switch anytime with <kbd>P</kbd> · co-op with <kbd>O</kbd></p>
+    </div>
+  </section>
+
+  <section id="coop" class="hidden" aria-label="Co-op">
+    <div class="panel">
+      <h2>Co-op <span class="tag">experimental</span></h2>
+      <p class="hint">One player hosts, one joins. Swap the codes over any chat you like.</p>
+      <div class="coop-actions">
+        <button id="coop-host">Host a game</button>
+        <button id="coop-join">Join a game</button>
+      </div>
+      <textarea id="coop-code" rows="4" spellcheck="false"
+        placeholder="Your code appears here — or paste the other player's code"></textarea>
+      <div class="coop-actions">
+        <button id="coop-copy">Copy code</button>
+        <button id="coop-accept">Accept pasted code</button>
+      </div>
+      <p id="coop-status" class="hint">Not connected.</p>
+      <p class="hint"><kbd>O</kbd> closes this panel</p>
     </div>
   </section>
 
   <aside id="help" aria-label="Controls">
-    <h1>Spellchain</h1>
     <ul class="controls">
       <li>
         <span class="label">Move</span> hold <kbd>LMB</kbd>
         <span class="sep">·</span>
         <span class="label">Dash</span> <kbd>Space</kbd>
       </li>
-      <li class="elements">
+      <li class="elements" data-for="mage">
         <span class="label">Mage</span>
         <span class="element-rows">
           <span><kbd>Q</kbd>Water <kbd>W</kbd>Life <kbd>E</kbd>Shield <kbd>R</kbd>Cold</span>
           <span><kbd>A</kbd>Lightning <kbd>S</kbd>Arcane <kbd>D</kbd>Earth <kbd>F</kbd>Fire</span>
         </span>
       </li>
-      <li class="elements">
+      <li class="elements" data-for="alchemist">
         <span class="label">Alch.</span>
         <span class="element-rows">
           <span><kbd>Q</kbd>Mushroom <kbd>W</kbd>Catnip <kbd>E</kbd>Portal <kbd>R</kbd>Heal</span>
@@ -61,7 +82,7 @@
       <li>
         <span class="label">Cast</span> <kbd>RMB</kbd> at cursor
         <span class="sep">·</span> <kbd>Shift</kbd>+<kbd>RMB</kbd> self / drink
-        <span class="sep">·</span> <kbd>C</kbd> area (mage)
+        <span class="sep">·</span> <span data-for="mage"><kbd>C</kbd> area</span>
       </li>
       <li>
         <span class="label">Queue</span> <kbd>Bksp</kbd> undo
