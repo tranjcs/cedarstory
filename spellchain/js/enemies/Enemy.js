@@ -64,6 +64,8 @@ export class Enemy {
     this.wobble = Math.max(0, this.wobble - dt);
     this.#attackCd = Math.max(0, this.#attackCd - dt);
 
+    if (this.spec.stationary) { this.kx = 0; this.ky = 0; return; }
+
     // knockback slide
     this.x += this.kx * dt;
     this.y += this.ky * dt;

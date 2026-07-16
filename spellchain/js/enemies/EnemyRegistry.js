@@ -12,6 +12,8 @@
  *                        0.4 = takes 40%, 1.5 = vulnerable)
  *   undead               healing magic damages it instead
  *   poisonImmune         cannot be poisoned or infected
+ *   stationary           never moves, attacks, or slides from knockback —
+ *                        a live damage-test target
  *   body                 which sprite the renderer draws
  */
 export const ENEMY_TYPES = {
@@ -56,5 +58,56 @@ export const ENEMY_TYPES = {
     weapon: null,
     resist: { fire: 0, water: 1.5 },
     body: 'imp', color: '#f97316',
+  },
+  shark: {
+    name: 'Reef Shark',
+    hp: 150, speed: 200, radius: 17, aggro: 560,
+    melee: { dmg: 24, range: 44, cd: 1.6, windup: 0.5 },
+    weapon: null,
+    resist: { water: 0.2, lightning: 1.5 },
+    body: 'shark', color: '#64748b',
+  },
+  ghost: {
+    name: 'Drowned Ghost',
+    hp: 70, speed: 115, radius: 12, aggro: 400,
+    melee: { dmg: 12, range: 36, cd: 1.1, windup: 0.4 },
+    weapon: null,
+    resist: { earth: 0.2, arcane: 1.4, cold: 0.5 },
+    undead: true,
+    poisonImmune: true,
+    body: 'ghost', color: '#c7d2fe',
+  },
+  crab: {
+    name: 'Pincher Crab',
+    hp: 55, speed: 70, radius: 12, aggro: 240,
+    melee: { dmg: 8, range: 30, cd: 0.9, windup: 0.3 },
+    weapon: null,
+    resist: { water: 0.4, earth: 0.6 },
+    body: 'crab', color: '#f97316',
+  },
+  guardsman: {
+    name: 'Hyrmoor Guardsman',
+    hp: 170, speed: 155, radius: 13, aggro: 2400,
+    melee: { dmg: 14, range: 46, cd: 1.2, windup: 0.4 },
+    weapon: 'sword',
+    resist: { arcane: 0.8 },
+    body: 'guardsman', color: '#94a3b8',
+  },
+  dragon: {
+    name: 'Elder Dragon',
+    hp: 1_000_000, speed: 0, radius: 46, aggro: 0,
+    melee: { dmg: 0, range: 0, cd: 99, windup: 0 },
+    weapon: null,
+    resist: {},
+    stationary: true,
+    body: 'dragon', color: '#b91c1c',
+  },
+  goblin: {
+    name: 'Gnashfang Goblin',
+    hp: 65, speed: 150, radius: 12, aggro: 340,
+    melee: { dmg: 10, range: 34, cd: 1.0, windup: 0.35 },
+    weapon: null,
+    resist: {},
+    body: 'goblin', color: '#84cc16',
   },
 };

@@ -86,13 +86,19 @@ export class CombatSystem {
     if (d.dead) return;
     d.dead = true;
     this.effects.puff(d.x, d.y - 14, '#94a3b8', 26);
-    this.effects.floatText(d.x, d.y - 60, 'DESTROYED', '#fb923c');
     this.bus.emit('sfx', { id: 'death' });
-    if (d.kind === 'enemy') this.bus.emit('enemy:killed', { type: d.type });
+    if (d.kind === 'npc') {
+      // that was a person. the town will remember this.
+      this.effects.floatText(d.x, d.y - 60, 'MURDERED', '#f87171');
+      this.bus.emit('npc:killed', { npc: d });
+    } else {
+      this.effects.floatText(d.x, d.y - 60, 'DESTROYED', '#fb923c');
+      if (d.kind === 'enemy') this.bus.emit('enemy:killed', { type: d.type });
+    }
   }
 
   chainLightning(from, dmg, quiet, ctx) {
-    for (const d of ctx.world.enemies.slice()) {
+    for (const d of ctx.world.combatTargets.slice()) {
       if (d === from || d.dead) continue;
       if (dist2(d.x, d.y, from.x, from.y) < 170 ** 2) {
         this.effects.bolt(from.x, from.y - 20, d.x, d.y - 20, 0.12);

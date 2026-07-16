@@ -3,15 +3,15 @@ import { Zone, Portal, Cat } from '../entities/alchemy.js';
 
 /**
  * The Alchemist's eight preset potions — pure data plus effect functions.
- * Keyed to the same QWERASDF row the Mage uses for elements. No mixing:
- * each key is one finished brew, balanced by cooldowns instead.
+ * Keyed to the same QWERASDF row the Mage uses for elements. No mixing,
+ * no cooldowns — throw as fast as you can uncork.
  *
  * Alchemy is indiscriminate: heal circles mend enemies too (but scorch
  * the undead), haste splashes speed up whoever is standing there.
  */
 export const POTIONS = {
   mushroom: {
-    key: 'Q', name: 'Mushroom Brew', color: '#c084fc', cd: 7, radius: 100,
+    key: 'Q', name: 'Mushroom Brew', color: '#c084fc', cd: 0, radius: 100,
     desc: 'Grows a toxic mushroom patch. Poison spreads between victims.',
     onLand(ctx, x, y) {
       const decos = [];
@@ -35,7 +35,7 @@ export const POTIONS = {
   },
 
   catnip: {
-    key: 'W', name: 'Catnip Tonic', color: '#f4a261', cd: 14, radius: 0,
+    key: 'W', name: 'Catnip Tonic', color: '#f4a261', cd: 0, radius: 0,
     desc: 'Summons three ferocious allies. They do not take requests.',
     onLand(ctx, x, y) {
       for (let i = 0; i < 3; i++) ctx.world.cats.push(new Cat(x, y, ctx.world.player));
@@ -44,7 +44,7 @@ export const POTIONS = {
   },
 
   portal: {
-    key: 'E', name: 'Portal Draught', color: '#38bdf8', cd: 3, radius: 26,
+    key: 'E', name: 'Portal Draught', color: '#38bdf8', cd: 0, radius: 26,
     desc: 'Opens a portal. Two link together; a third replaces the oldest.',
     onLand(ctx, x, y) {
       ctx.world.portals.push(new Portal(x, y));
@@ -54,7 +54,7 @@ export const POTIONS = {
   },
 
   heal: {
-    key: 'R', name: 'Healing Salve', color: '#4ade80', cd: 9, radius: 110,
+    key: 'R', name: 'Healing Salve', color: '#4ade80', cd: 0, radius: 110,
     desc: 'Mends anything inside — friend, foe, or cat. Sears the undead.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
@@ -70,9 +70,11 @@ export const POTIONS = {
   },
 
   alcohol: {
-    key: 'A', name: 'Moonshine', color: '#fbbf24', cd: 9, radius: 120,
+    key: 'A', name: 'Moonshine', color: '#fbbf24', cd: 0, radius: 120,
     desc: 'Confusion cloud: enemies stagger backwards, players steer in reverse.',
     onLand(ctx, x, y) {
+      // tavern crowds love a free round after dark — anyone else, not so much
+      ctx.reputation?.onMoonshine(ctx, x, y);
       ctx.world.zones.push(new Zone({
         x, y, r: 120, ttl: 4, type: 'alcohol', color: '#fbbf24', interval: 0.4,
         onTick(ctx2, zone) {
@@ -86,7 +88,7 @@ export const POTIONS = {
   },
 
   butterfingers: {
-    key: 'S', name: 'Butterfingers', color: '#fde68a', cd: 7, radius: 110,
+    key: 'S', name: 'Butterfingers', color: '#fde68a', cd: 0, radius: 110,
     desc: 'Armed enemies in the splash drop their weapons.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
@@ -99,7 +101,7 @@ export const POTIONS = {
   },
 
   haste: {
-    key: 'D', name: 'Haste Philter', color: '#7dd3fc', cd: 10, radius: 100,
+    key: 'D', name: 'Haste Philter', color: '#7dd3fc', cd: 0, radius: 100,
     desc: 'Quickens everything standing in it by half again.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
@@ -115,7 +117,7 @@ export const POTIONS = {
   },
 
   rain: {
-    key: 'F', name: 'Make It Rain', color: '#60a5fa', cd: 12, radius: 130,
+    key: 'F', name: 'Make It Rain', color: '#60a5fa', cd: 0, radius: 130,
     desc: 'A private raincloud: soaks everything, douses fires, sprouts flowers.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
@@ -139,6 +141,8 @@ export const POTIONS = {
     },
   },
 };
+
+for (const [id, potion] of Object.entries(POTIONS)) potion.id = id;
 
 export const POTION_IDS = Object.keys(POTIONS);
 

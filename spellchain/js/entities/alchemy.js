@@ -67,7 +67,7 @@ export class Zone {
   /** Everything inside the circle. */
   occupants(world) {
     const hits = [];
-    for (const list of [world.players, world.enemies, world.cats]) {
+    for (const list of [world.players, world.enemies, world.npcs, world.cats]) {
       for (const e of list) {
         if (dist2(e.x, e.y, this.x, this.y) < this.r ** 2) hits.push(e);
       }
