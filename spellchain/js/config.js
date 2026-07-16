@@ -71,12 +71,6 @@ export const CHANNEL = {
   perElement: 0.55,
 };
 
-export const WORLD = {
-  enemyCap: 24,          // max live spawned enemies
-  spawnChance: 0.4,      // chance a freshly visited chunk holds enemies
-  spawnMinDistance: 280, // never spawn on top of a player
-};
-
 export const DOTS = {
   burnDps: 9,
   poisonDps: 6,
