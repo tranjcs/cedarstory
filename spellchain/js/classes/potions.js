@@ -11,7 +11,7 @@ import { Zone, Portal, Cat } from '../entities/alchemy.js';
  */
 export const POTIONS = {
   mushroom: {
-    key: 'Q', name: 'Mushroom Brew', color: '#c084fc', cd: 0, radius: 100,
+    key: 'Q', name: 'Mushroom Brew', color: '#c084fc', cd: 0, radius: 500,
     desc: 'Grows a toxic mushroom patch. Poison spreads between victims.',
     onLand(ctx, x, y) {
       const decos = [];
@@ -20,7 +20,7 @@ export const POTIONS = {
         decos.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d, s: rnd(0.7, 1.3) });
       }
       ctx.world.zones.push(new Zone({
-        x, y, r: 100, ttl: 8, type: 'mushroom', color: '#c084fc', interval: 1, decos,
+        x, y, r: 500, ttl: 8, type: 'mushroom', color: '#c084fc', interval: 1, decos,
         onTick(ctx2, zone) {
           for (const e of zone.occupants(ctx2.world)) {
             if (e.kind !== 'enemy' && e.kind !== 'dummy') continue;
@@ -44,7 +44,7 @@ export const POTIONS = {
   },
 
   portal: {
-    key: 'E', name: 'Portal Draught', color: '#38bdf8', cd: 0, radius: 26,
+    key: 'E', name: 'Portal Draught', color: '#38bdf8', cd: 0, radius: 130,
     desc: 'Opens a portal. Two link together; a third replaces the oldest.',
     onLand(ctx, x, y) {
       ctx.world.portals.push(new Portal(x, y));
@@ -54,11 +54,11 @@ export const POTIONS = {
   },
 
   heal: {
-    key: 'R', name: 'Healing Salve', color: '#4ade80', cd: 0, radius: 110,
+    key: 'R', name: 'Healing Salve', color: '#4ade80', cd: 0, radius: 550,
     desc: 'Mends anything inside — friend, foe, or cat. Sears the undead.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
-        x, y, r: 110, ttl: 5, type: 'heal', color: '#4ade80', interval: 0.5,
+        x, y, r: 550, ttl: 5, type: 'heal', color: '#4ade80', interval: 0.5,
         onTick(ctx2, zone) {
           for (const e of zone.occupants(ctx2.world)) {
             if (e.maxHp === undefined) continue;
@@ -70,13 +70,13 @@ export const POTIONS = {
   },
 
   alcohol: {
-    key: 'A', name: 'Moonshine', color: '#fbbf24', cd: 0, radius: 120,
+    key: 'A', name: 'Moonshine', color: '#fbbf24', cd: 0, radius: 600,
     desc: 'Confusion cloud: enemies stagger backwards, players steer in reverse.',
     onLand(ctx, x, y) {
       // tavern crowds love a free round after dark — anyone else, not so much
       ctx.reputation?.onMoonshine(ctx, x, y);
       ctx.world.zones.push(new Zone({
-        x, y, r: 120, ttl: 4, type: 'alcohol', color: '#fbbf24', interval: 0.4,
+        x, y, r: 600, ttl: 4, type: 'alcohol', color: '#fbbf24', interval: 0.4,
         onTick(ctx2, zone) {
           for (const e of zone.occupants(ctx2.world)) {
             if (!e.status) continue;
@@ -88,24 +88,24 @@ export const POTIONS = {
   },
 
   butterfingers: {
-    key: 'S', name: 'Butterfingers', color: '#fde68a', cd: 0, radius: 110,
+    key: 'S', name: 'Butterfingers', color: '#fde68a', cd: 0, radius: 550,
     desc: 'Armed enemies in the splash drop their weapons.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
-        x, y, r: 110, ttl: 3, type: 'butterfingers', color: '#fde68a', interval: 99,
+        x, y, r: 550, ttl: 3, type: 'butterfingers', color: '#fde68a', interval: 99,
       }));
       for (const e of ctx.world.enemies) {
-        if (Math.hypot(e.x - x, e.y - y) < 110 && e.dropWeapon) e.dropWeapon(ctx);
+        if (Math.hypot(e.x - x, e.y - y) < 550 && e.dropWeapon) e.dropWeapon(ctx);
       }
     },
   },
 
   haste: {
-    key: 'D', name: 'Haste Philter', color: '#7dd3fc', cd: 0, radius: 100,
+    key: 'D', name: 'Haste Philter', color: '#7dd3fc', cd: 0, radius: 500,
     desc: 'Quickens everything standing in it by half again.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
-        x, y, r: 100, ttl: 4, type: 'haste', color: '#7dd3fc', interval: 0.4,
+        x, y, r: 500, ttl: 4, type: 'haste', color: '#7dd3fc', interval: 0.4,
         onTick(ctx2, zone) {
           for (const e of zone.occupants(ctx2.world)) {
             if (!e.status) continue;
@@ -117,11 +117,11 @@ export const POTIONS = {
   },
 
   rain: {
-    key: 'F', name: 'Make It Rain', color: '#60a5fa', cd: 0, radius: 130,
+    key: 'F', name: 'Make It Rain', color: '#60a5fa', cd: 0, radius: 650,
     desc: 'A private raincloud: soaks everything, douses fires, sprouts flowers.',
     onLand(ctx, x, y) {
       ctx.world.zones.push(new Zone({
-        x, y, r: 130, ttl: 6, type: 'rain', color: '#60a5fa', interval: 0.5,
+        x, y, r: 650, ttl: 6, type: 'rain', color: '#60a5fa', interval: 0.5,
         onTick(ctx2, zone) {
           for (const e of zone.occupants(ctx2.world)) {
             if (!e.status) continue;
